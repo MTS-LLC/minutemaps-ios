@@ -5,8 +5,9 @@
 #
 # Usage: scripts/release.sh <version> <artifacts-dir> [release notes]
 #
-#   <version>        plain semver, e.g. 1.0.0. Should match MARKETING_VERSION of the MinuteMaps target in JMap2-iOS.
-#   <artifacts-dir>  the directory JMap2-iOS's MinuteMaps/scripts/build-xcframework.sh wrote, holding
+#   <version>        plain semver, e.g. 1.0.0. Should match MARKETING_VERSION of the MinuteMaps target in MinuteMaps-Mobile.
+#   <artifacts-dir>  the directory MinuteMaps-Mobile's iOS/MinuteMaps/scripts/build-xcframework.sh wrote
+#                    (iOS/build/minutemaps-release), holding
 #                    MinuteMaps.xcframework.zip and MobileCore.xcframework.zip.
 #
 # Needs: a clean checkout of main, push access, and the gh CLI signed in.
@@ -26,7 +27,7 @@ cd "$(dirname "$0")/.."
 
 for zip in MinuteMaps MobileCore; do
   if [ ! -f "$artifacts/$zip.xcframework.zip" ]; then
-    echo "error: $artifacts/$zip.xcframework.zip not found; run build-xcframework.sh in JMap2-iOS first" >&2
+    echo "error: $artifacts/$zip.xcframework.zip not found; run iOS/MinuteMaps/scripts/build-xcframework.sh in MinuteMaps-Mobile first" >&2
     exit 1
   fi
 done

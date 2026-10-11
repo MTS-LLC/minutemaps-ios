@@ -33,17 +33,18 @@ The SDK's guide and API overview ship with its source, in the MinuteMaps iOS SDK
 
 ## Releasing
 
-1. In JMap2-iOS, set the `MinuteMaps` target's `MARKETING_VERSION` to the new version, make sure the
-   `MobileCore.xcframework` at the repo root is the one you intend to ship, and run:
+1. In MinuteMaps-Mobile, set the `MinuteMaps` target's `MARKETING_VERSION` (in `iOS/MinuteMaps/MinuteMaps.xcodeproj`)
+   to the new version and run the script below, passing the mobile-core version to ship. It rebuilds MobileCore from
+   that checkout's `mobile-core/`, so both zips come from the same commit:
 
    ```bash
-   MinuteMaps/scripts/build-xcframework.sh
+   iOS/MinuteMaps/scripts/build-xcframework.sh <mobile-core version>
    ```
 
 2. Here, on a clean `main`:
 
    ```bash
-   scripts/release.sh <version> <path to JMap2-iOS>/build/minutemaps-release "Release notes"
+   scripts/release.sh <version> <path to MinuteMaps-Mobile>/iOS/build/minutemaps-release "Release notes"
    ```
 
    It writes the version and both checksums into `Package.swift`, commits, tags `<version>`, pushes, and creates the

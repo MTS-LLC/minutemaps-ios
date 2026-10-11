@@ -2,9 +2,9 @@
 import PackageDescription
 
 // The MinuteMaps iOS SDK, as prebuilt binaries attached to this repo's releases:
-//   • MinuteMaps.xcframework — the SDK (MTS-LLC/JMap2-iOS, MinuteMaps/)
-//   • MobileCore.xcframework — the shared Kotlin Multiplatform core it is compiled against (MTS-LLC/mm-web-sdk,
-//     packages/mobile-core)
+//   • MinuteMaps.xcframework — the SDK (MTS-LLC/MinuteMaps-Mobile, iOS/MinuteMaps/)
+//   • MobileCore.xcframework — the shared Kotlin Multiplatform core it is compiled against (MTS-LLC/MinuteMaps-Mobile,
+//     mobile-core/)
 // Both source repos are private, so SPM can't download their release assets; this public repo hosts them.
 //
 // The two always ship together under one tag: MinuteMaps only works with the MobileCore build it was compiled against.
@@ -22,7 +22,8 @@ let package = Package(
         .library(name: "MinuteMaps", targets: ["MinuteMapsSupport"]),
     ],
     dependencies: [
-        // MinuteMaps.xcframework is compiled against this version; keep the floor in step with JMap2-iOS's Package.resolved.
+        // MinuteMaps.xcframework is compiled against this version; keep the floor in step with MinuteMaps-Mobile's
+        // iOS/MinuteMaps/MinuteMaps.xcodeproj Package.resolved.
         .package(url: "https://github.com/maplibre/maplibre-gl-native-distribution", from: "6.19.2"),
     ],
     targets: [
