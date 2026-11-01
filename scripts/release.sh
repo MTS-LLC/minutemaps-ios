@@ -10,6 +10,9 @@
 #                    (iOS/build/minutemaps-release), holding
 #                    MinuteMaps.xcframework.zip and MobileCore.xcframework.zip.
 #
+# Refuses binaries that aren't this release's build: a MinuteMaps framework whose version isn't <version>, a MobileCore
+# framework without a mobile-core release version, or zips identical to the ones the current release ships.
+#
 # Needs: a clean checkout of main, push access, and the gh CLI signed in.
 
 set -euo pipefail
@@ -41,10 +44,51 @@ if git rev-parse -q --verify "refs/tags/$version" >/dev/null; then
   exit 1
 fi
 
+# The version each slice of <zip>'s framework reports (CFBundleShortVersionString), one per line.
+slice_versions() {
+  local zip="$1" name="$2" plist tmp
+  tmp=$(mktemp)
+  unzip -Z1 "$zip" | grep -E "^$name\.xcframework/[^/]+/$name\.framework/Info\.plist\$" | while read -r plist; do
+    unzip -p "$zip" "$plist" > "$tmp"
+    /usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$tmp"
+  done
+  rm -f "$tmp"
+}
+
+# The binaries must be the build being released. 1.3.0 first went out carrying 1.2.2's zips, left over in the artifacts
+# directory because build-xcframework.sh hadn't been rerun, and nothing here noticed.
+minutemaps_versions=$(slice_versions "$artifacts/MinuteMaps.xcframework.zip" MinuteMaps | sort -u)
+if [ "$minutemaps_versions" != "$version" ]; then
+  echo "error: MinuteMaps.xcframework.zip is version $(echo $minutemaps_versions), not $version." >&2
+  echo "  Rerun iOS/MinuteMaps/scripts/build-xcframework.sh <mobile-core version> in MinuteMaps-Mobile, on a checkout whose" >&2
+  echo "  MARKETING_VERSION is $version; the artifacts directory may hold an earlier release's zips." >&2
+  exit 1
+fi
+mobilecore_version=$(slice_versions "$artifacts/MobileCore.xcframework.zip" MobileCore | sort -u)
+if [ -z "$mobilecore_version" ] || [ "$(echo "$mobilecore_version" | wc -l | tr -d ' ')" != 1 ]; then
+  echo "error: MobileCore.xcframework.zip's slices disagree on their version: $(echo $mobilecore_version)" >&2
+  exit 1
+fi
+# 1.0 is Kotlin/Native's default, from a build before mobile-core stamped its version; 0.1.0 is a build made without one.
+if [ "$mobilecore_version" = "1.0" ] || [ "$mobilecore_version" = "0.1.0" ]; then
+  echo "error: MobileCore.xcframework.zip is version $mobilecore_version, not a mobile-core release build." >&2
+  echo "  Rerun build-xcframework.sh with the mobile-core version, e.g. build-xcframework.sh 0.6.0" >&2
+  exit 1
+fi
+
 minutemaps_checksum=$(swift package compute-checksum "$artifacts/MinuteMaps.xcframework.zip")
 mobilecore_checksum=$(swift package compute-checksum "$artifacts/MobileCore.xcframework.zip")
 
-echo "Releasing MinuteMaps $version"
+# Same bytes as the release Package.swift points at now: the previous release's binaries again.
+for pair in "minuteMapsChecksum:$minutemaps_checksum:MinuteMaps" "mobileCoreChecksum:$mobilecore_checksum:MobileCore"; do
+  IFS=: read -r key checksum zip <<< "$pair"
+  if grep -q "^let $key = \"$checksum\"" Package.swift; then
+    echo "error: $zip.xcframework.zip is identical to the one the current release ships; rebuild it" >&2
+    exit 1
+  fi
+done
+
+echo "Releasing MinuteMaps $version (MobileCore $mobilecore_version)"
 echo "  MinuteMaps.xcframework.zip  $minutemaps_checksum"
 echo "  MobileCore.xcframework.zip  $mobilecore_checksum"
 read -r -p "Commit, tag, push and create the GitHub release? [y/N] " answer
