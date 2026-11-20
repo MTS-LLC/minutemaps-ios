@@ -9,9 +9,9 @@ import PackageDescription
 //
 // The two always ship together under one tag: MinuteMaps only works with the MobileCore build it was compiled against.
 // Don't edit `version` or the checksums by hand; scripts/release.sh sets them when it publishes a release.
-let version = "1.7.1"
-let minuteMapsChecksum = "264855d5a753ff2ffbb45e82f1243a41f57e2df42305a9d09681e5c8bf1fd92c"
-let mobileCoreChecksum = "4638e292fad6afeddf4541376e09cbef1e2acc2becbef0b32c9c24fd5ed01cf2"
+let version = "1.7.2"
+let minuteMapsChecksum = "b67b927323aa361707e6b1e1a161c3159dbc0ba2047515c34036d7252b7f89f0"
+let mobileCoreChecksum = "fb058a39a5b24b58af72a1521d9eb257572742466a562181c053c4ba1151803f"
 
 let releaseUrl = "https://github.com/MTS-LLC/minutemaps-ios/releases/download/\(version)"
 
